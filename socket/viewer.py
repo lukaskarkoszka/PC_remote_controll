@@ -5,7 +5,7 @@ import numpy as np
 import cv2
 import asyncio
 import zmq.asyncio
-
+import aioconsole
 # class Viewer:
 #     context = zmq.Context()
 #     footage_socket = context.socket(zmq.DEALER)
@@ -52,7 +52,7 @@ class ChatClient:
 
     async def sendMsg(self):
         while True:
-            msg = input("write msg: ")
+            msg = await aioconsole.ainput("write msg: ")
             self.footage_socket.send_string(msg)
 
     async def run(self):
