@@ -3,34 +3,40 @@ import zmq
 import base64
 import numpy as np
 import cv2
+import aioconsole
 import asyncio
 import zmq.asyncio
-import aioconsole
-# class Viewer:
-#     context = zmq.Context()
-#     footage_socket = context.socket(zmq.DEALER)
-#
-#     def __init__(self, address):
-#         self.footage_socket.connect('tcp://' + address + ':5555')
-#
-#     def video(self):
-#         while True:
-#             try:
-#                 frame = self.footage_socket.recv_string()
-#                 img = base64.b64decode(frame)
-#                 npimg = np.fromstring(img, dtype=np.uint8)
-#                 source = cv2.imdecode(npimg, 1)
-#                 cv2.imshow("Stream", source)
-#                 cv2.waitKey(1)
-#
-#             except KeyboardInterrupt:
-#                 cv2.destroyAllWindows()
-#                 break
-#
-#     def run(self):
-#         videoThread = threading.Thread(target=self.video)
-#         videoThread.daemon = True
-#         videoThread.start()
+import matplotlib.pyplot as plt
+
+class Viewer:
+    context = zmq.asyncio.Context()
+    footage_socket = context.socket(zmq.DEALER)
+
+    def __init__(self):
+        self.footage_socket.connect('tcp://localhost:5556')
+        self.registration_msg()
+
+    async def video(self):
+        while True:
+            try:
+                frame = await asyncio.wait_for(self.footage_socket.recv(), timeout=5.0)
+                if frame != b'':
+                    np_frame = np.frombuffer(frame, dtype=np.uint8)
+                    source = cv2.imdecode(np_frame, 1)
+                    if source is not None:
+                        cv2.imshow("Stream", source)
+                        if cv2.waitKey(1) & 0xFF == ord('q'):
+                            break
+            except asyncio.TimeoutError:
+                print("Timeout while waiting for frame")
+        cv2.destroyAllWindows()
+
+    def registration_msg(self):
+        print("registration")
+        self.footage_socket.send_string("")
+
+    async def run(self):
+        await asyncio.gather(self.video())
 
 class ChatClient:
     context = zmq.asyncio.Context()
@@ -60,11 +66,20 @@ class ChatClient:
 
 async def main():
     client = ChatClient()
-    await asyncio.gather(client.run())
+    viewer = Viewer()
+    try:
+        await asyncio.gather(client.run(), viewer.run())
+
+    except asyncio.CancelledError:
+        print("main task cancelled")
 
 if __name__ == "__main__":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("Program interrupted by user")
+
 
 
 

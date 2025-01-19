@@ -100,7 +100,7 @@ async def run(pc, signaling):
 
 
 async def main():
-    signaling = TcpSocketSignaling("127.0.0.1",8080)
+    signaling = TcpSocketSignaling("127.0.0.1",5556)
     # signaling.source_address += "/offer"
 
     pc = RTCPeerConnection()
