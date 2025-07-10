@@ -1,6 +1,5 @@
 import asyncio
 import zmq.asyncio
-import base64
 import cv2
 import aioconsole
 

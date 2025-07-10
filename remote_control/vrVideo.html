@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Sztuczny Stereo Stream</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+    #startVR {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 1em 2em;
+      font-size: 1.2em;
+      background: #ffffff10;
+      color: #fff;
+      border: 2px solid #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      z-index: 10;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="vrCanvas"></canvas>
+  <button id="startVR">Uruchom VR</button>
+
+  <script>
+    const canvas = document.getElementById('vrCanvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    const startBtn = document.getElementById('startVR');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    function isMobile() {
+      return /Mobi|Android/i.test(navigator.userAgent);
+    }
+
+    function requestFullscreen() {
+      const docElm = document.documentElement;
+      if (docElm.requestFullscreen) {
+        docElm.requestFullscreen();
+      } else if (docElm.webkitRequestFullscreen) {
+        docElm.webkitRequestFullscreen();
+      } else if (docElm.msRequestFullscreen) {
+        docElm.msRequestFullscreen();
+      }
+    }
+
+    // MJPEG stream z serwera
+    img.src = '/video';
+    img.onload = () => console.log("Stream działa");
+
+    function draw() {
+      const w = canvas.width / 2;
+      const h = canvas.height;
+      const offset = 10;
+
+      try {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, offset, 0, img.width, img.height, 0, 0, w, h);       // lewe oko
+        ctx.drawImage(img, -offset, 0, img.width, img.height, w, 0, w, h);      // prawe oko
+      } catch (e) {}
+      requestAnimationFrame(draw);
+    }
+
+    // Jeśli na telefonie, pokaż przycisk VR
+    if (isMobile()) {
+      startBtn.style.display = 'block';
+      startBtn.addEventListener('click', () => {
+        requestFullscreen();
+        startBtn.style.display = 'none';
+      });
+    } else {
+      // Na desktopie uruchom fullscreen automatycznie
+      window.addEventListener('load', () => {
+        requestFullscreen();
+      });
+    }
+
+    draw();
+  </script>
+</body>
+</html>

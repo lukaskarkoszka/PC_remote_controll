@@ -1,13 +1,8 @@
-import threading
-import zmq
-import base64
 import numpy as np
 import cv2
 import aioconsole
 import asyncio
 import zmq.asyncio
-import matplotlib.pyplot as plt
-
 class Viewer:
     context = zmq.asyncio.Context()
     footage_socket = context.socket(zmq.DEALER)
