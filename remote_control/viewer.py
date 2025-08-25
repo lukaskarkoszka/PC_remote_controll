@@ -5,6 +5,7 @@ import asyncio
 import zmq.asyncio
 import pygame
 import json
+import platform
 class Viewer:
     context = zmq.asyncio.Context()
     footage_socket = context.socket(zmq.DEALER)
@@ -111,7 +112,8 @@ async def main():
         print("main task cancelled")
 
 if __name__ == "__main__":
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    if platform.system() == "Windows":
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     try:
         asyncio.run(main())
     except KeyboardInterrupt:

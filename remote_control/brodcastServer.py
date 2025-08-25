@@ -1,4 +1,5 @@
 import asyncio
+import platform
 import zmq.asyncio
 import zmq
 from aiohttp import web
@@ -84,7 +85,8 @@ async def main():
     )
 
 if __name__ == "__main__":
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    if platform.system() == "Windows":
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
